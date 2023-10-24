@@ -1,0 +1,30 @@
+namespace: nestjs-prisma-client-starter
+nestjs-prisma-client-starter:
+  defines: runnable
+  metadata:
+    name: nestjs-prisma-client-starter
+    description: NestJS Prisma Client Starter Project
+    icon: https://emojiapi.dev/api/v1/globe_with_meridians.svg
+  containers:
+    nestjs-prisma-client-starter:
+      build: .
+      image: env-238.registry.local/nestjs-prisma-client-starter:main-ba67287
+  services:
+    http:
+      container: nestjs-prisma-client-starter
+      port: <- $port
+      host-port: <- $port
+      publish: false
+      protocol: TCP
+      description: The port on which the app is listening.
+  variables:
+    port:
+      env: PORT
+      type: int
+      description: The port on which the app is listening.
+      value: 3000
+    jwt-access-secret:
+      env: JWT_ACCESS_SECRET
+      type: string
+      description: Secret key for JWT authentication.
+      value: '!!!SETME!!!'
