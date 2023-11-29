@@ -1,0 +1,110 @@
+namespace: nestjs-prisma-starter
+
+postgres:
+  defines: runnable
+  inherits: postgresql/db
+  metadata:
+    name: postgres
+    description: PostgreSQL database used by the NestJS application.
+    icon: https://www.postgresql.org/media/img/about/press/elephant.png
+  variables:
+    db_name:
+      type: string
+      value: monk
+      description: ''
+    db_pass:
+      type: string
+      value: adminpassword
+      description: ''
+    db_user:
+      type: string
+      value: monk
+      description: ''
+
+nest-api:
+  defines: runnable
+  metadata:
+    name: nest-api
+    description: NestJS application with Prisma integration and GraphQL capabilities.
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    nest-api:
+      image: env-2905.registry.local/nest-api:main-ba67287
+      build: .
+      dockerfile: Dockerfile.alpine
+  services:
+    nest-api-http:
+      description: HTTP port for the NestJS API
+      container: nest-api
+      port: $port
+      host-port: $port
+      publish: true
+      protocol: tcp
+  connections:
+    database-connection:
+      target: nestjs-prisma-starter/postgres
+      service: postgres
+      optional: true
+      description: Connection to the PostgreSQL database
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: 3000
+      description: The port on which the NestJS application runs
+    jwt-access-secret:
+      env: JWT_ACCESS_SECRET
+      type: string
+      value: secureAccessSecret
+      description: Secret key for JWT access tokens
+    jwt-refresh-secret:
+      env: JWT_REFRESH_SECRET
+      type: string
+      value: secureRefreshSecret
+      description: Secret key for JWT refresh tokens
+    graphql-playground-enabled:
+      env: GRAPHQL_PLAYGROUND_ENABLED
+      type: bool
+      value: true
+      description: Flag to enable GraphQL playground
+    graphql-debug:
+      env: GRAPHQL_DEBUG
+      type: bool
+      value: true
+      description: Flag to enable GraphQL debugging
+    graphql-schema-destination:
+      env: GRAPHQL_SCHEMA_DESTINATION
+      type: string
+      value: ./schema.graphql
+      description: Destination path for the generated GraphQL schema
+    graphql-sort-schema:
+      env: GRAPHQL_SORT_SCHEMA
+      type: bool
+      value: true
+      description: Flag to enable sorting of the GraphQL schema
+    security-expires-in:
+      env: SECURITY_EXPIRES_IN
+      type: string
+      value: 15m
+      description: Duration for which the JWT access token is valid
+    security-refresh-in:
+      env: SECURITY_REFRESH_IN
+      type: string
+      value: 7d
+      description: Duration for which the JWT refresh token is valid
+    security-bcrypt-salt-or-round:
+      env: SECURITY_BCRYPT_SALT_OR_ROUND
+      type: int
+      value: 10
+      description: Number of rounds for bcrypt salt generation
+    database-url:
+      env: DATABASE_URL
+      type: string
+      value: <- connection-port("database-connection")
+      description: Connection string for the PostgreSQL database
+
+stack:
+  defines: group
+  members:
+    - nestjs-prisma-starter/postgres
+    - nestjs-prisma-starter/nest-api
