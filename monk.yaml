@@ -1,0 +1,124 @@
+namespace: nestjs-prisma-starter
+
+postgres:
+  defines: runnable
+  inherits: postgresql/db
+  metadata:
+    name: postgres
+    description: PostgreSQL database service
+    icon: https://www.postgresql.org/media/img/about/press/elephant.png
+  variables:
+    db_name:
+      type: string
+      value: monk
+      description: ''
+    db_pass:
+      type: string
+      value: adminpassword
+      description: ''
+    db_user:
+      type: string
+      value: monk
+      description: ''
+
+nest-api:
+  defines: runnable
+  metadata:
+    name: nest-api
+    description: Main backend service for the NestJS application
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    nest-api:
+      image: env-3346.registry.local/nest-api:main-ba67287
+      build: .
+      dockerfile: Dockerfile
+  services: {}
+  connections: {}
+  variables:
+    port:
+      env: PORT
+      type: int
+      value: 3000
+      description: Port on which the NestJS server will listen
+    database-url:
+      env: DATABASE_URL
+      type: string
+      value: postgresql://monk:adminpassword@postgres:postgres/monk
+      description: Connection string for the PostgreSQL database
+    jwt-refresh-secret:
+      env: JWT_REFRESH_SECRET
+      type: string
+      value: someStrongSecretKey
+      description: Secret key for JWT refresh tokens
+    bcrypt-salt-or-round:
+      env: BCRYPT_SALT_OR_ROUND
+      type: string
+      value: 10
+      description: Number of rounds for bcrypt password hashing
+    refresh-in:
+      env: REFRESH_IN
+      type: string
+      value: 7d
+      description: Duration for the refresh token validity
+    cors-enabled:
+      env: CORS_ENABLED
+      type: bool
+      value: true
+      description: Flag to enable or disable CORS
+    swagger-enabled:
+      env: SWAGGER_ENABLED
+      type: bool
+      value: true
+      description: Flag to enable or disable Swagger UI
+    graphql-playground-enabled:
+      env: GRAPHQL_PLAYGROUND_ENABLED
+      type: bool
+      value: true
+      description: Flag to enable or disable GraphQL Playground
+    graphql-debug:
+      env: GRAPHQL_DEBUG
+      type: bool
+      value: true
+      description: Flag to enable or disable GraphQL debugging
+    graphql-schema-destination:
+      env: GRAPHQL_SCHEMA_DESTINATION
+      type: string
+      value: /app/schema.graphql
+      description: Destination path for the GraphQL schema file
+    graphql-sort-schema:
+      env: GRAPHQL_SORT_SCHEMA
+      type: bool
+      value: true
+      description: Flag to enable or disable sorting of the GraphQL schema
+
+prisma-migrate:
+  defines: runnable
+  metadata:
+    name: prisma-migrate
+    description: Service for applying database migrations
+    icon: https://emojiapi.dev/api/v1/robot.svg
+  containers:
+    prisma-migrate:
+      image: env-3346.registry.local/prisma-migrate:main-ba67287
+      build: .
+      dockerfile: Dockerfile.prisma-migrate
+  services: {}
+  connections:
+    database-connection:
+      target: nestjs-prisma-starter/postgres
+      service: postgres
+      optional: true
+      description: Connection to the PostgreSQL database to apply migrations
+  variables:
+    database-url:
+      env: DATABASE_URL
+      type: string
+      value: <- connection-hostname("database-connection")
+      description: Connection string for the database
+
+stack:
+  defines: group
+  members:
+    - nestjs-prisma-starter/postgres
+    - nestjs-prisma-starter/nest-api
+    - nestjs-prisma-starter/prisma-migrate
